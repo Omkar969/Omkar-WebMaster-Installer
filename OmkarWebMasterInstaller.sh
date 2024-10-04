@@ -17,15 +17,6 @@ print_message() {
     log_message "============================================================\n"
 }
 
-# Function to print the header
-print_header() {
-    echo -e "\n"
-    echo -e "\033[1;34m============================================================\033[0m"
-    echo -e "\033[1;32m             Welcome to the Omkar WebMaster Installer      \033[0m"
-    echo -e "\033[1;33m                     Created by Omkar Gore                    \033[0m"
-    echo -e "\033[1;34m============================================================\033[0m\n"
-}
-
 # Function to check if a package is installed
 is_installed() {
     dpkg -l | grep -qw "$1"
@@ -155,8 +146,6 @@ confirm_choices() {
 }
 
 # Main script logic
-print_header
-
 print_message "Starting installation script..."
 
 # Immediately show the menu after printing the header
