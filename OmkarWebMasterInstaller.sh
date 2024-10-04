@@ -11,12 +11,6 @@ check_root() {
     fi
 }
 
-# Function to update the package list
-update_system() {
-    echo "Updating package list..."
-    apt update && apt upgrade -y
-}
-
 # Function to install Apache2
 install_apache2() {
     echo "Installing Apache2..."
@@ -109,7 +103,6 @@ install_tools() {
 
 # Main script execution
 check_root
-update_system
 install_tools
 
 echo "Selected tools installed successfully!"
