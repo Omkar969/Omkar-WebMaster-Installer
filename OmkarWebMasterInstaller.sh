@@ -166,6 +166,9 @@ if ! sudo apt update -y >> "$LOG_FILE" 2>&1; then
     exit 1
 fi
 
+# Prompt user to press Enter to continue
+read -p "Press Enter to continue to the selection menu..."
+
 # Get the user’s selection from the menu
 choices=$(menu_selection)
 confirm_choices "$choices"
