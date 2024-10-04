@@ -152,7 +152,7 @@ install_tools() {
             esac
         done
 
-        echo "All selected tools processed."
+        echo "All selected tools processed. Please select more tools or exit."
     done
 }
 
