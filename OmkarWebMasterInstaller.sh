@@ -77,7 +77,7 @@ install_fluxion() {
 
 # Function to display the menu
 display_menu() {
-    echo "Select tools to install:"
+    echo "Select tools to install (separate multiple choices with spaces):"
     echo "1) Apache2"
     echo "2) MariaDB"
     echo "3) PHP"
@@ -85,16 +85,15 @@ display_menu() {
     echo "5) Netcat"
     echo "6) Nikto"
     echo "7) Fluxion"
-    echo "8) All"
-    echo "9) Exit"
+    echo "8) Exit"
 }
 
 # Function to read user choice and install selected tools
 install_tools() {
-    while true; do
-        display_menu
-        read -p "Enter your choice (1-9): " choice
+    display_menu
+    read -p "Enter your choice (e.g., 1 3 5): " -a choices
 
+    for choice in "${choices[@]}"; do
         case $choice in
             1) install_apache2 ;;
             2) install_mariadb ;;
@@ -103,18 +102,7 @@ install_tools() {
             5) install_netcat ;;
             6) install_nikto ;;
             7) install_fluxion ;;
-            8)
-                install_apache2
-                install_mariadb
-                install_php
-                install_python3
-                install_netcat
-                install_nikto
-                install_fluxion
-                break
-                ;;
-            9) echo "Exiting..."; exit 0 ;;
-            *) echo "Invalid choice. Please try again." ;;
+            *) echo "Invalid choice: $choice. Skipping." ;;
         esac
     done
 }
