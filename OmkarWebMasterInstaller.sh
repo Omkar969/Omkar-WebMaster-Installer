@@ -6,7 +6,7 @@
 # Function to check for root privileges
 check_root() {
     if [ "$(id -u)" -ne 0 ]; then
-        echo "This script must be run as root. Please run with sudo."
+        echo -e "\033[1;31mThis script must be run as root. Please run with sudo.\033[0m"
         exit 1
     fi
 }
@@ -22,44 +22,46 @@ install_tool() {
     local install_command="$2"
 
     if is_installed "$tool_name"; then
-        echo "$tool_name is already installed."
+        echo -e "\033[1;33m$tool_name is already installed.\033[0m"
     else
-        echo "Installing $tool_name..."
+        echo -e "\033[1;32mInstalling $tool_name...\033[0m"
         eval "$install_command"
-        echo "$tool_name installed."
+        echo -e "\033[1;32m$tool_name installed successfully!\033[0m"
     fi
 }
 
-# Function to install tools
+# Installation functions for each tool
 install_apache2() { install_tool "apache2" "apt install apache2 -y && systemctl enable apache2 && systemctl start apache2"; }
-install_mariadb() { install_tool "mysql" "apt install mariadb-server mariadb-client -y && systemctl enable mariadb && systemctl start mariadb && mysql_secure_installation && create_new_user"; }
+install_mariadb() { 
+    install_tool "mysql" "apt install mariadb-server mariadb-client -y && systemctl enable mariadb && systemctl start mariadb && mysql_secure_installation && create_new_user"; 
+}
 install_php() { install_tool "php" "apt install php libapache2-mod-php php-mysql -y"; }
 install_python3() { install_tool "python3" "apt install python3 python3-pip -y"; }
 install_netcat() { install_tool "nc" "apt install netcat -y"; }
 install_nikto() { install_tool "nikto" "apt install nikto -y"; }
 install_fluxion() { 
     if [ -d "fluxion" ]; then 
-        echo "Fluxion is already installed."
+        echo -e "\033[1;33mFluxion is already installed.\033[0m"
     else 
-        echo "Installing Fluxion..."
+        echo -e "\033[1;32mInstalling Fluxion...\033[0m"
         apt install git -y
         git clone https://github.com/FluxionNetwork/fluxion.git
-        cd fluxion || { echo "Failed to enter fluxion directory"; exit 1; }
+        cd fluxion || { echo -e "\033[1;31mFailed to enter fluxion directory\033[0m"; exit 1; }
         chmod +x fluxion.sh
-        echo "Fluxion installed. You can run it by navigating to the fluxion directory and executing ./fluxion.sh"
+        echo -e "\033[1;32mFluxion installed. You can run it by navigating to the fluxion directory and executing ./fluxion.sh\033[0m"
         cd ..
     fi 
 }
 install_git() { install_tool "git" "apt install git -y"; }
 install_curl() { install_tool "curl" "apt install curl -y"; }
 install_nmap() { install_tool "nmap" "apt install nmap -y"; }
-install_openssh() { install_tool "ssh" "apt install openssh-server -y && systemctl enable ssh && systemctl start ssh"; }
+install_ssh() { install_tool "ssh Server" "apt install ssh -y && systemctl enable ssh && systemctl start ssh"; }
 install_wireshark() { install_tool "wireshark" "apt install wireshark -y"; }
 install_docker() { 
     if is_installed "docker"; then 
-        echo "Docker is already installed."
+        echo -e "\033[1;33mDocker is already installed.\033[0m"
     else 
-        echo "Installing Docker..."
+        echo -e "\033[1;32mInstalling Docker...\033[0m"
         apt install apt-transport-https ca-certificates curl software-properties-common -y
         curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
         add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
@@ -67,28 +69,28 @@ install_docker() {
         apt install docker-ce -y
         systemctl enable docker
         systemctl start docker
-        echo "Docker installed."
+        echo -e "\033[1;32mDocker installed successfully!\033[0m"
     fi 
 }
 install_metasploit() { install_tool "msfconsole" "apt install metasploit-framework -y"; }
 install_burp_suite() { 
     if [ -d "burpsuite" ]; then 
-        echo "Burp Suite is already installed."
+        echo -e "\033[1;33mBurp Suite is already installed.\033[0m"
     else 
-        echo "Installing Burp Suite..."
+        echo -e "\033[1;32mInstalling Burp Suite...\033[0m"
         wget https://portswigger.net/burp/releases/download?product=community&version=2023.8.1&type=jar -O burpsuite.jar
-        echo "Burp Suite downloaded. You can run it with 'java -jar burpsuite.jar'"
+        echo -e "\033[1;32mBurp Suite downloaded. You can run it with 'java -jar burpsuite.jar'\033[0m"
     fi 
 }
 install_snort() { install_tool "snort" "apt install snort -y"; }
 install_aircrack_ng() { install_tool "aircrack-ng" "apt install aircrack-ng -y"; }
 install_john() { install_tool "john" "apt install john -y"; }
 install_openvas() { 
-    echo "Installing OpenVAS..."
+    echo -e "\033[1;32mInstalling OpenVAS...\033[0m"
     apt install openvas -y
     gvm-setup
     gvm-start
-    echo "OpenVAS installed and started."
+    echo -e "\033[1;32mOpenVAS installed and started successfully!\033[0m"
 }
 install_sqlmap() { install_tool "sqlmap" "apt install sqlmap -y"; }
 install_ettercap() { install_tool "ettercap" "apt install ettercap-graphical -y"; }
@@ -101,35 +103,37 @@ create_new_user() {
     mysql -u root -e "CREATE USER '$new_user'@'localhost' IDENTIFIED BY '$new_password';"
     mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO '$new_user'@'localhost';"
     mysql -u root -e "FLUSH PRIVILEGES;"
-    echo "User '$new_user' created and granted privileges."
+    echo -e "\033[1;32mUser '$new_user' created and granted privileges successfully.\033[0m"
 }
 
 # Function to display the menu
 display_menu() {
+    echo -e "\n\033[1;36m============================\033[0m"
     echo -e "\033[1;34mSelect tools to install (separate multiple choices with spaces):\033[0m"
-    echo -e "\033[1;32m1) Apache2\033[0m"
+    echo -e "\033[1;35m1) Apache2\033[0m"
     echo -e "\033[1;33m2) MariaDB\033[0m"
-    echo -e "\033[1;35m3) PHP\033[0m"
+    echo -e "\033[1;32m3) PHP\033[0m"
     echo -e "\033[1;36m4) Python3\033[0m"
-    echo -e "\033[1;37m5) Netcat\033[0m"
+    echo -e "\033[1;34m5) Netcat\033[0m"
     echo -e "\033[1;31m6) Nikto\033[0m"
-    echo -e "\033[1;34m7) Fluxion\033[0m"
-    echo -e "\033[1;32m8) Git\033[0m"
-    echo -e "\033[1;33m9) Curl\033[0m"
-    echo -e "\033[1;35m10) Nmap\033[0m"
-    echo -e "\033[1;36m11) OpenSSH Server\033[0m"
-    echo -e "\033[1;37m12) Wireshark\033[0m"
-    echo -e "\033[1;31m13) Docker\033[0m"
-    echo -e "\033[1;34m14) Metasploit Framework\033[0m"
+    echo -e "\033[1;33m7) Fluxion\033[0m"
+    echo -e "\033[1;35m8) Git\033[0m"
+    echo -e "\033[1;32m9) Curl\033[0m"
+    echo -e "\033[1;36m10) Nmap\033[0m"
+    echo -e "\033[1;34m11) SSH Server\033[0m"
+    echo -e "\033[1;31m12) Wireshark\033[0m"
+    echo -e "\033[1;33m13) Docker\033[0m"
+    echo -e "\033[1;35m14) Metasploit Framework\033[0m"
     echo -e "\033[1;32m15) Burp Suite\033[0m"
-    echo -e "\033[1;33m16) Snort\033[0m"
-    echo -e "\033[1;35m17) Aircrack-ng\033[0m"
-    echo -e "\033[1;36m18) John the Ripper\033[0m"
-    echo -e "\033[1;37m19) OpenVAS\033[0m"
-    echo -e "\033[1;31m20) SQLMap\033[0m"
-    echo -e "\033[1;34m21) Ettercap\033[0m"
-    echo -e "\033[1;32m22) Uninstall a Tool\033[0m"
-    echo -e "\033[1;33m23) Exit\033[0m"
+    echo -e "\033[1;36m16) Snort\033[0m"
+    echo -e "\033[1;34m17) Aircrack-ng\033[0m"
+    echo -e "\033[1;31m18) John the Ripper\033[0m"
+    echo -e "\033[1;33m19) OpenVAS\033[0m"
+    echo -e "\033[1;35m20) SQLMap\033[0m"
+    echo -e "\033[1;32m21) Ettercap\033[0m"
+    echo -e "\033[1;36m22) Uninstall a Tool\033[0m"
+    echo -e "\033[1;31m23) Exit\033[0m"
+    echo -e "\033[1;36m============================\033[0m"
 }
 
 # Function to print the header
@@ -149,7 +153,7 @@ while true; do
     print_header
     display_menu
     echo -n -e "\n\033[1;34m============================\033[0m"
-    read -p " Enter your choice (e.g., 1 2 3): " -a choices
+    read -p "Enter your choice (e.g., 1 2 3): " -a choices
     echo -e "\033[1;34m============================\033[0m"
 
     for choice in "${choices[@]}"; do
@@ -164,7 +168,7 @@ while true; do
             8) install_git ;;
             9) install_curl ;;
             10) install_nmap ;;
-            11) install_openssh ;;
+            11) install_SSH_Server ;;
             12) install_wireshark ;;
             13) install_docker ;;
             14) install_metasploit ;;
@@ -180,13 +184,13 @@ while true; do
                 read -p "Enter the name of the tool to uninstall: " uninstall_tool
                 if is_installed "$uninstall_tool"; then
                     apt remove "$uninstall_tool" -y
-                    echo "$uninstall_tool has been uninstalled."
+                    echo -e "\033[1;32m$uninstall_tool has been uninstalled.\033[0m"
                 else
-                    echo "$uninstall_tool is not installed."
+                    echo -e "\033[1;31m$uninstall_tool is not installed.\033[0m"
                 fi
                 ;;
-            23) echo "Exiting..."; exit 0 ;;
-            *) echo "Invalid choice: $choice"; ;;
+            23) echo -e "\033[1;32mExiting...\033[0m"; exit 0 ;;
+            *) echo -e "\033[1;31mInvalid choice: $choice\033[0m"; ;;
         esac
     done
 done
