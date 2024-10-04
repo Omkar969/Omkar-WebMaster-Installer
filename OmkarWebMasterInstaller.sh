@@ -1,199 +1,127 @@
 #!/bin/bash
 
-# Define log file
-LOG_FILE="install_web_stack.log"
-> $LOG_FILE
+# Script to install selected tools on Debian-based systems
+# Tools: Apache2, MariaDB, PHP, Python3, Netcat, Nikto, Fluxion
 
-# Function to print and log messages
-log_message() {
-    echo -e "$1"
-    echo -e "$1" >> "$LOG_FILE"
-}
-
-# Function to print section headers
-print_message() {
-    log_message "\n============================================================"
-    log_message "$1"
-    log_message "============================================================\n"
-}
-
-# Function to print the header
-print_header() {
-    echo -e "\n"
-    echo -e "\033[1;34m============================================================\033[0m"
-    echo -e "\033[1;32m             Welcome to the Web Stack Installer             \033[0m"
-    echo -e "\033[1;33m                     Created by Omkar Gore                    \033[0m"
-    echo -e "\033[1;34m============================================================\033[0m\n"
-}
-
-# Function to check if a package is installed
-is_installed() {
-    dpkg -l | grep -qw "$1"
-}
-
-# Function to install a package with error handling
-install_package() {
-    PACKAGE=$1
-    if is_installed "$PACKAGE"; then
-        log_message "$PACKAGE is already installed. Skipping."
-    else
-        print_message "Installing $PACKAGE..."
-        if sudo apt install "$PACKAGE" -y >> "$LOG_FILE" 2>&1; then
-            log_message "$PACKAGE installation completed."
-        else
-            log_message "Error installing $PACKAGE. Check the log for details."
-        fi
-    fi
-}
-
-# Function to prompt user for software selection
-menu_selection() {
-    echo -e "\033[1;36mSelect the software components you want to install:\033[0m"
-    echo "1) Apache2"
-    echo "2) PHP"
-    echo "3) Python3"
-    echo "4) MariaDB"
-    echo "5) Fluxion"
-    echo "6) Nikto"
-    echo "7) Netcat"
-    echo "8) All"
-    echo "9) None (Exit)"
-    
-    read -p "Enter your choice (e.g., 1 2 3 for multiple selections): " selection
-    echo "$selection"
-}
-
-# Function to install MariaDB with secure installation and create a user
-install_mariadb() {
-    if is_installed "mariadb-server"; then
-        log_message "MariaDB is already installed. Skipping."
-    else
-        print_message "Installing MariaDB server..."
-        sudo apt install mariadb-server -y >> "$LOG_FILE" 2>&1
-        sudo systemctl enable mariadb
-        sudo systemctl start mariadb
-
-        print_message "Securing MariaDB installation (interactive)..."
-        if sudo mysql_secure_installation; then
-            log_message "MariaDB secured successfully."
-        else
-            log_message "Failed to secure MariaDB installation. Please check manually."
-        fi
-        
-        # Creating a new user and granting privileges
-        create_mariadb_user
-    fi
-}
-
-# Function to create a new MariaDB user and grant privileges
-create_mariadb_user() {
-    read -p "Enter the new MariaDB username: " db_username
-    read -sp "Enter the password for the new user: " db_password
-    echo ""
-    
-    read -p "Enter the host for the new user (e.g., localhost): " db_host
-    
-    # Create the user and grant privileges
-    print_message "Creating user '$db_username' and granting privileges..."
-
-    # Automatically login to MariaDB and run the commands
-    if sudo mysql -u root -p -e "CREATE USER '$db_username'@'$db_host' IDENTIFIED BY '$db_password'; GRANT ALL PRIVILEGES ON *.* TO '$db_username'@'$db_host' WITH GRANT OPTION; FLUSH PRIVILEGES;" >> "$LOG_FILE" 2>&1; then
-        log_message "User '$db_username' created and granted all privileges."
-    else
-        log_message "Error creating user '$db_username'. Check the log for details."
-    fi
-}
-
-# Function to install DVWA
-install_dvwa() {
-    print_message "Downloading and installing DVWA..."
-    if wget https://raw.githubusercontent.com/IamCarron/DVWA-Script/main/Install-DVWA.sh -O Install-DVWA.sh >> "$LOG_FILE" 2>&1; then
-        chmod +x Install-DVWA.sh
-        if sudo ./Install-DVWA.sh >> "$LOG_FILE" 2>&1; then
-            log_message "DVWA installation completed."
-        else
-            log_message "Error installing DVWA. Check the log for details."
-        fi
-    else
-        log_message "Failed to download DVWA installation script."
-    fi
-}
-
-# Function to install Fluxion
-install_fluxion() {
-    print_message "Installing Fluxion..."
-    
-    # Clone Fluxion repository
-    if git clone https://www.github.com/FluxionNetwork/fluxion.git >> "$LOG_FILE" 2>&1; then
-        cd fluxion || { log_message "Failed to enter Fluxion directory."; return; }
-
-        # Install dependencies for Fluxion
-        sudo apt install aircrack-ng isc-dhcp-server hostapd lighttpd bettercap mdk3 nmap -y >> "$LOG_FILE" 2>&1
-        
-        # Run installer script for Fluxion
-        if sudo ./fluxion.sh >> "$LOG_FILE" 2>&1; then
-            log_message "Fluxion installation completed."
-        else
-            log_message "Error during Fluxion installation. Check the log for details."
-        fi
-        
-        cd ..  # Navigate back to the previous directory
-    else
-        log_message "Failed to clone Fluxion repository."
-    fi
-}
-
-# Function to confirm choices
-confirm_choices() {
-    log_message "You have selected the following components to install: $1"
-    read -p "Are you sure you want to proceed? (yes/no): " confirm
-    if [[ "$confirm" != "yes" && "$confirm" != "y" ]]; then
-        log_message "Installation aborted by user."
+# Function to check for root privileges
+check_root() {
+    if [ "$(id -u)" -ne 0 ]; then
+        echo "This script must be run as root. Please run with sudo."
         exit 1
     fi
 }
 
-# Main script logic
-print_header
+# Function to update the package list
+update_system() {
+    echo "Updating package list..."
+    apt update && apt upgrade -y
+}
 
-print_message "Starting installation script..."
+# Function to install Apache2
+install_apache2() {
+    echo "Installing Apache2..."
+    apt install apache2 -y
+    systemctl enable apache2
+    systemctl start apache2
+    echo "Apache2 installed and started."
+}
 
-# Update package list
-print_message "Updating package list..."
-if ! sudo apt update -y >> "$LOG_FILE" 2>&1; then
-    log_message "Failed to update package list. Exiting."
-    exit 1
-fi
+# Function to install MariaDB
+install_mariadb() {
+    echo "Installing MariaDB..."
+    apt install mariadb-server mariadb-client -y
+    systemctl enable mariadb
+    systemctl start mariadb
+    echo "MariaDB installed and started."
+    mysql_secure_installation
+}
 
-# Get the user’s selection from the menu
-choices=$(menu_selection)
-confirm_choices "$choices"
+# Function to install PHP
+install_php() {
+    echo "Installing PHP and required modules..."
+    apt install php libapache2-mod-php php-mysql -y
+    echo "PHP installed."
+}
 
-# Parse user choices and install selected components
-for choice in $choices; do
-    case "$choice" in
-        1) install_package "apache2" ;;
-        2) install_package "php libapache2-mod-php php-mysql" ;;
-        3) install_package "python3" ;;
-        4) install_mariadb ;;
-        5) install_fluxion ;;
-        6) install_package "nikto" ;;
-        7) install_package "netcat" ;;
-        8) 
-            install_package "apache2"
-            install_package "php libapache2-mod-php php-mysql"
-            install_package "python3"
-            install_mariadb
-            install_fluxion
-            install_package "nikto"
-            install_package "netcat"
-            ;;
-        9) log_message "No components selected. Exiting." ;;
-        *) log_message "Invalid selection: $choice. Skipping." ;;
-    esac
-done
+# Function to install Python3 and pip
+install_python3() {
+    echo "Installing Python3 and pip..."
+    apt install python3 python3-pip -y
+    echo "Python3 and pip installed."
+}
 
-# Install DVWA regardless of user choices (assumes it's required)
-install_dvwa
+# Function to install Netcat
+install_netcat() {
+    echo "Installing Netcat..."
+    apt install netcat -y
+    echo "Netcat installed."
+}
 
-print_message "Installation completed! Check the log file for more details: $LOG_FILE."
+# Function to install Nikto
+install_nikto() {
+    echo "Installing Nikto..."
+    apt install nikto -y
+    echo "Nikto installed."
+}
+
+# Function to install Fluxion
+install_fluxion() {
+    echo "Installing Fluxion..."
+    apt install git -y
+    git clone https://github.com/FluxionNetwork/fluxion.git
+    cd fluxion || { echo "Failed to enter fluxion directory"; exit 1; }
+    chmod +x fluxion.sh
+    echo "Fluxion installed. You can run it by navigating to the fluxion directory and executing ./fluxion.sh"
+    cd ..
+}
+
+# Function to display the menu
+display_menu() {
+    echo "Select tools to install:"
+    echo "1) Apache2"
+    echo "2) MariaDB"
+    echo "3) PHP"
+    echo "4) Python3"
+    echo "5) Netcat"
+    echo "6) Nikto"
+    echo "7) Fluxion"
+    echo "8) All"
+    echo "9) Exit"
+}
+
+# Function to read user choice and install selected tools
+install_tools() {
+    while true; do
+        display_menu
+        read -p "Enter your choice (1-9): " choice
+
+        case $choice in
+            1) install_apache2 ;;
+            2) install_mariadb ;;
+            3) install_php ;;
+            4) install_python3 ;;
+            5) install_netcat ;;
+            6) install_nikto ;;
+            7) install_fluxion ;;
+            8)
+                install_apache2
+                install_mariadb
+                install_php
+                install_python3
+                install_netcat
+                install_nikto
+                install_fluxion
+                break
+                ;;
+            9) echo "Exiting..."; exit 0 ;;
+            *) echo "Invalid choice. Please try again." ;;
+        esac
+    done
+}
+
+# Main script execution
+check_root
+update_system
+install_tools
+
+echo "Selected tools installed successfully!"
