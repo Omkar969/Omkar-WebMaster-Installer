@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to install selected tools on Debian-based systems
-# Tools: Apache2, MariaDB, PHP, Python3, Netcat, Nikto, Fluxion, Git, Curl, Nmap, OpenSSH Server, Wireshark, Docker, Metasploit, Burp Suite, Snort, Aircrack-ng, John the Ripper, OpenVAS, SQLMap, Ettercap
+# Tools: Apache2, MariaDB, PHP, Python3, Netcat, Nikto, Fluxion, Git, Curl, Nmap, SSH, Wireshark, Docker, Metasploit, Burp Suite, Snort, Aircrack-ng, John the Ripper, OpenVAS, SQLMap, Ettercap
 
 # Function to check for root privileges
 check_root() {
@@ -55,18 +55,16 @@ install_fluxion() {
 install_git() { install_tool "git" "apt install git -y"; }
 install_curl() { install_tool "curl" "apt install curl -y"; }
 install_nmap() { install_tool "nmap" "apt install nmap -y"; }
-install_openssh() {
-    if is_installed "sshd"; then
-        echo -e "\033[1;33mOpenSSH Server is already installed.\033[0m"
+install_ssh() {
+    if is_installed "ssh"; then
+        echo -e "\033[1;33mSSH is already installed.\033[0m"
     else
-        echo -e "\033[1;32mInstalling OpenSSH Server...\033[0m"
-        apt install openssh-server -y
+        echo -e "\033[1;32mInstalling SSH...\033[0m"
+        apt install ssh -y
         if [ $? -eq 0 ]; then
-            systemctl enable ssh
-            systemctl start ssh
-            echo -e "\033[1;32mOpenSSH Server installed and started successfully!\033[0m"
+            echo -e "\033[1;32mSSH installed successfully!\033[0m"
         else
-            echo -e "\033[1;31mFailed to install OpenSSH Server. Please check the package manager for details.\033[0m"
+            echo -e "\033[1;31mFailed to install SSH. Please check the package manager for details.\033[0m"
         fi
     fi
 }
@@ -134,7 +132,7 @@ display_menu() {
     echo -e "\033[1;35m8) Git\033[0m"
     echo -e "\033[1;32m9) Curl\033[0m"
     echo -e "\033[1;36m10) Nmap\033[0m"
-    echo -e "\033[1;34m11) OpenSSH Server\033[0m"
+    echo -e "\033[1;34m11) SSH\033[0m"
     echo -e "\033[1;31m12) Wireshark\033[0m"
     echo -e "\033[1;33m13) Docker\033[0m"
     echo -e "\033[1;35m14) Metasploit\033[0m"
@@ -182,7 +180,7 @@ while true; do
             8) install_git ;;
             9) install_curl ;;
             10) install_nmap ;;
-            11) install_openssh ;;
+            11) install_ssh ;;
             12) install_wireshark ;;
             13) install_docker ;;
             14) install_metasploit ;;
