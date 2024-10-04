@@ -94,9 +94,12 @@ validate_selection() {
     return 0
 }
 
-# Main menu loop
+# Main script logic
+print_message "Starting installation script..."
+
+# Immediately show the menu after printing the header
+choices=""
 while true; do
-    print_message "Starting installation script..."
     choices=$(menu_selection)
     
     # Validate user input
