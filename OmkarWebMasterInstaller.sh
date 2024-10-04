@@ -4,12 +4,10 @@
 LOG_FILE="install_web_stack.log"
 > "$LOG_FILE"
 
-# Function to print and log messages with timestamp
+# Function to print and log messages
 log_message() {
-    local TIMESTAMP
-    TIMESTAMP=$(date +"%Y-%m-%d %H:%M:%S")
-    echo -e "$TIMESTAMP: $1"
-    echo -e "$TIMESTAMP: $1" >> "$LOG_FILE"
+    echo -e "$1"
+    echo -e "$1" >> "$LOG_FILE"
 }
 
 # Function to print section headers
