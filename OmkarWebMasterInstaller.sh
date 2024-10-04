@@ -40,7 +40,24 @@ install_mariadb() {
         systemctl start mariadb
         echo "MariaDB installed and started."
         mysql_secure_installation
+
+        # Create new user
+        create_new_user
     fi
+}
+
+# Function to create a new MariaDB user
+create_new_user() {
+    read -p "Enter the new username for MariaDB: " new_user
+    read -sp "Enter the password for the new user: " new_password
+    echo
+
+    # Create user and grant privileges
+    mysql -u root -e "CREATE USER '$new_user'@'localhost' IDENTIFIED BY '$new_password';"
+    mysql -u root -e "GRANT ALL PRIVILEGES ON *.* TO '$new_user'@'localhost';"
+    mysql -u root -e "FLUSH PRIVILEGES;"
+
+    echo "User '$new_user' created and granted privileges."
 }
 
 # Function to install PHP
