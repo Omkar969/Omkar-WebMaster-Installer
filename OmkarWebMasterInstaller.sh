@@ -121,22 +121,36 @@ install_fluxion() {
 
 # Function to display the menu
 display_menu() {
-    echo "Select tools to install (separate multiple choices with spaces):"
-    echo "1) Apache2"
-    echo "2) MariaDB"
-    echo "3) PHP"
-    echo "4) Python3"
-    echo "5) Netcat"
-    echo "6) Nikto"
-    echo "7) Fluxion"
-    echo "8) Exit"
+    echo -e "\033[1;34mSelect tools to install (separate multiple choices with spaces):\033[0m"
+    echo -e "\033[1;32m1) Apache2\033[0m"
+    echo -e "\033[1;33m2) MariaDB\033[0m"
+    echo -e "\033[1;35m3) PHP\033[0m"
+    echo -e "\033[1;36m4) Python3\033[0m"
+    echo -e "\033[1;37m5) Netcat\033[0m"
+    echo -e "\033[1;31m6) Nikto\033[0m"
+    echo -e "\033[1;34m7) Fluxion\033[0m"
+    echo -e "\033[1;32m8) Exit\033[0m"
+}
+
+# Function to print the header
+print_header() {
+    echo -e "\n"
+    echo -e "\033[1;34m============================================================\033[0m"
+    echo -e "\033[1;32m             Welcome to the Omkar WebMaster Installer      \033[0m"
+    echo -e "\033[1;33m                     Created by Omkar Gore                    \033[0m"
+    echo -e "\033[1;34m============================================================\033[0m\n"
 }
 
 # Function to read user choice and install selected tools
 install_tools() {
     while true; do
+        print_header  # Print the header each time the menu is displayed
         display_menu
-        read -p "Enter your choice (e.g., 1 3 5): " -a choices
+        
+        # Display colorful prompt for user choice
+        echo -e "\033[1;34m============================\033[0m"
+        read -p $'\033[1;32mEnter your choice (e.g., 1 3 5): \033[0m' -a choices
+        echo -e "\033[1;34m============================\033[0m"
 
         for choice in "${choices[@]}"; do
             case $choice in
