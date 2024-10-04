@@ -49,16 +49,16 @@ install_package() {
 # Function to prompt user for software selection
 menu_selection() {
     echo -e "\033[1;36mSelect the software components you want to install:\033[0m"
-    echo "1) Apache2"
-    echo "2) PHP"
-    echo "3) Python3"
-    echo "4) MariaDB"
-    echo "5) DVWA (Damn Vulnerable Web Application)"
-    echo "6) Fluxion"
-    echo "7) Nikto"
-    echo "8) Netcat"
-    echo "9) All"
-    echo "10) None (Exit)"
+    echo "1) Apache2 - Leading web server software for serving web content."
+    echo "2) PHP - Popular server-side scripting language for web development."
+    echo "3) Python3 - Versatile programming language for various applications."
+    echo "4) MariaDB - Powerful open-source database management system."
+    echo "5) DVWA - Damn Vulnerable Web Application for learning about web vulnerabilities."
+    echo "6) Fluxion - Security tool for auditing Wi-Fi networks."
+    echo "7) Nikto - Web server scanner to detect vulnerabilities and configuration issues."
+    echo "8) Netcat - Networking utility for reading and writing data across networks."
+    echo "9) All - Install all the above tools."
+    echo "10) None - Exit the installer."
     
     read -p "Enter your choice (e.g., 1 2 3 for multiple selections): " selection
     echo "$selection"
@@ -178,17 +178,9 @@ for choice in $choices; do
         3) install_package "python3" ;;
         4) install_mariadb ;;
         5) install_dvwa ;;
-        6) install_package "nikto" ;;
-        7) install_package "netcat" ;;
-        8) 
-            install_package "apache2"
-            install_package "php libapache2-mod-php php-mysql"
-            install_package "python3"
-            install_mariadb
-            install_dvwa
-            install_package "nikto"
-            install_package "netcat"
-            ;;
+        6) install_fluxion ;;
+        7) install_package "nikto" ;;
+        8) install_package "netcat" ;;
         9) 
             install_package "apache2"
             install_package "php libapache2-mod-php php-mysql"
