@@ -143,7 +143,7 @@ display_menu() {
     echo -e "\033[1;33m19) OpenVAS\033[0m"
     echo -e "\033[1;35m20) SQLMap\033[0m"
     echo -e "\033[1;32m21) Ettercap\033[0m"
-    echo -e "\033[1;34m22) Uninstall a Tool\033[0m"
+    echo -e "\033[1;36m22) Uninstall a Tool\033[0m"
     echo -e "\033[1;36m23) Exit\033[0m"
     echo -e "\033[1;36m============================\033[0m"
 }
@@ -193,7 +193,32 @@ while true; do
             21) install_ettercap ;;
             22) 
                 echo "Uninstalling a tool..."
-                read -p "Enter the name of the tool to uninstall: " uninstall_tool
+                read -p "Enter the tool number to uninstall (1-21): " uninstall_choice
+                case "$uninstall_choice" in
+                    1) uninstall_tool="apache2"; ;;
+                    2) uninstall_tool="mariadb"; ;;
+                    3) uninstall_tool="php"; ;;
+                    4) uninstall_tool="python3"; ;;
+                    5) uninstall_tool="netcat"; ;;
+                    6) uninstall_tool="nikto"; ;;
+                    7) uninstall_tool="fluxion"; ;;
+                    8) uninstall_tool="git"; ;;
+                    9) uninstall_tool="curl"; ;;
+                    10) uninstall_tool="nmap"; ;;
+                    11) uninstall_tool="ssh"; ;;
+                    12) uninstall_tool="wireshark"; ;;
+                    13) uninstall_tool="docker"; ;;
+                    14) uninstall_tool="metasploit"; ;;
+                    15) uninstall_tool="burpsuite"; ;;
+                    16) uninstall_tool="snort"; ;;
+                    17) uninstall_tool="aircrack-ng"; ;;
+                    18) uninstall_tool="john"; ;;
+                    19) uninstall_tool="openvas"; ;;
+                    20) uninstall_tool="sqlmap"; ;;
+                    21) uninstall_tool="ettercap"; ;;
+                    *) echo -e "\033[1;31mInvalid choice: $uninstall_choice\033[0m"; continue ;;
+                esac
+
                 if is_installed "$uninstall_tool"; then
                     apt remove "$uninstall_tool" -y
                     echo -e "\033[1;32m$uninstall_tool has been uninstalled.\033[0m"
