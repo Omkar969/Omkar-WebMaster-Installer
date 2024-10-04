@@ -2,7 +2,7 @@
 
 # Define log file
 LOG_FILE="install_web_stack.log"
-> $LOG_FILE
+> "$LOG_FILE"
 
 # Function to print and log messages
 log_message() {
@@ -10,25 +10,13 @@ log_message() {
     echo -e "$1" >> "$LOG_FILE"
 }
 
-# Function to print section headers
-print_message() {
-    log_message "\n============================================================"
-    log_message "$1"
-    log_message "============================================================\n"
-}
-
-# Function to check if a package is installed
-is_installed() {
-    dpkg -l | grep -qw "$1"
-}
-
 # Function to install a package with error handling
 install_package() {
     PACKAGE=$1
-    if is_installed "$PACKAGE"; then
+    if dpkg -l | grep -qw "$PACKAGE"; then
         log_message "$PACKAGE is already installed. Skipping."
     else
-        print_message "Installing $PACKAGE..."
+        echo "Installing $PACKAGE..."
         if sudo apt install "$PACKAGE" -y >> "$LOG_FILE" 2>&1; then
             log_message "$PACKAGE installation completed."
         else
@@ -51,21 +39,21 @@ menu_selection() {
     echo "9) All - Install all the above tools."
     echo "10) None - Exit the installer."
     
-    read -p "Enter your choice (e.g., 1 2 3 for multiple selections): " selection
+    read -p "Please select your choice (e.g., 1 2 3 for multiple selections): " selection
     echo "$selection"
 }
 
 # Function to install MariaDB with secure installation and create a user
 install_mariadb() {
-    if is_installed "mariadb-server"; then
+    if dpkg -l | grep -qw "mariadb-server"; then
         log_message "MariaDB is already installed. Skipping."
     else
-        print_message "Installing MariaDB server..."
+        echo "Installing MariaDB server..."
         sudo apt install mariadb-server -y >> "$LOG_FILE" 2>&1
         sudo systemctl enable mariadb
         sudo systemctl start mariadb
 
-        print_message "Securing MariaDB installation (interactive)..."
+        echo "Securing MariaDB installation (interactive)..."
         if sudo mysql_secure_installation; then
             log_message "MariaDB secured successfully."
         else
@@ -86,7 +74,7 @@ create_mariadb_user() {
     read -p "Enter the host for the new user (e.g., localhost): " db_host
     
     # Create the user and grant privileges
-    print_message "Creating user '$db_username' and granting privileges..."
+    echo "Creating user '$db_username' and granting privileges..."
 
     # Automatically login to MariaDB and run the commands
     if sudo mysql -u root -p -e "CREATE USER '$db_username'@'$db_host' IDENTIFIED BY '$db_password'; GRANT ALL PRIVILEGES ON *.* TO '$db_username'@'$db_host' WITH GRANT OPTION; FLUSH PRIVILEGES;" >> "$LOG_FILE" 2>&1; then
@@ -98,7 +86,7 @@ create_mariadb_user() {
 
 # Function to install DVWA
 install_dvwa() {
-    print_message "Downloading and installing DVWA..."
+    echo "Downloading and installing DVWA..."
     if wget https://raw.githubusercontent.com/IamCarron/DVWA-Script/main/Install-DVWA.sh -O Install-DVWA.sh >> "$LOG_FILE" 2>&1; then
         chmod +x Install-DVWA.sh
         if sudo ./Install-DVWA.sh >> "$LOG_FILE" 2>&1; then
@@ -113,7 +101,7 @@ install_dvwa() {
 
 # Function to install Fluxion
 install_fluxion() {
-    print_message "Installing Fluxion..."
+    echo "Installing Fluxion..."
     
     # Clone Fluxion repository
     if git clone https://www.github.com/FluxionNetwork/fluxion.git >> "$LOG_FILE" 2>&1; then
@@ -146,11 +134,8 @@ confirm_choices() {
 }
 
 # Main script logic
-print_message "Starting installation script..."
-
 # Immediately show the menu after printing the header
 choices=$(menu_selection)
-confirm_choices "$choices"
 
 # Parse user choices and install selected components
 for choice in $choices; do
@@ -178,4 +163,4 @@ for choice in $choices; do
     esac
 done
 
-print_message "Installation completed! Check the log file for more details: $LOG_FILE."
+log_message "Installation completed! Check the log file for more details: $LOG_FILE."
