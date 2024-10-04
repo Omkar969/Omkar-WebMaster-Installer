@@ -21,7 +21,7 @@ print_message() {
 print_header() {
     echo -e "\n"
     echo -e "\033[1;34m============================================================\033[0m"
-    echo -e "\033[1;32m             Welcome to the Web Stack Installer             \033[0m"
+    echo -e "\033[1;32m             Welcome to the Omkar WebMaster Installer      \033[0m"
     echo -e "\033[1;33m                     Created by Omkar Gore                    \033[0m"
     echo -e "\033[1;34m============================================================\033[0m\n"
 }
@@ -159,14 +159,7 @@ print_header
 
 print_message "Starting installation script..."
 
-# Update package list
-print_message "Updating package list..."
-if ! sudo apt update -y >> "$LOG_FILE" 2>&1; then
-    log_message "Failed to update package list. Exiting."
-    exit 1
-fi
-
-# Immediately show the menu after updating the package list
+# Immediately show the menu after printing the header
 choices=$(menu_selection)
 confirm_choices "$choices"
 
