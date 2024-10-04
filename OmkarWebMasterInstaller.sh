@@ -11,62 +11,95 @@ check_root() {
     fi
 }
 
+# Function to check if a tool is installed
+is_installed() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # Function to install Apache2
 install_apache2() {
-    echo "Installing Apache2..."
-    apt install apache2 -y
-    systemctl enable apache2
-    systemctl start apache2
-    echo "Apache2 installed and started."
+    if is_installed "apache2"; then
+        echo "Apache2 is already installed."
+    else
+        echo "Installing Apache2..."
+        apt install apache2 -y
+        systemctl enable apache2
+        systemctl start apache2
+        echo "Apache2 installed and started."
+    fi
 }
 
 # Function to install MariaDB
 install_mariadb() {
-    echo "Installing MariaDB..."
-    apt install mariadb-server mariadb-client -y
-    systemctl enable mariadb
-    systemctl start mariadb
-    echo "MariaDB installed and started."
-    mysql_secure_installation
+    if is_installed "mysql"; then
+        echo "MariaDB is already installed."
+    else
+        echo "Installing MariaDB..."
+        apt install mariadb-server mariadb-client -y
+        systemctl enable mariadb
+        systemctl start mariadb
+        echo "MariaDB installed and started."
+        mysql_secure_installation
+    fi
 }
 
 # Function to install PHP
 install_php() {
-    echo "Installing PHP and required modules..."
-    apt install php libapache2-mod-php php-mysql -y
-    echo "PHP installed."
+    if is_installed "php"; then
+        echo "PHP is already installed."
+    else
+        echo "Installing PHP and required modules..."
+        apt install php libapache2-mod-php php-mysql -y
+        echo "PHP installed."
+    fi
 }
 
 # Function to install Python3 and pip
 install_python3() {
-    echo "Installing Python3 and pip..."
-    apt install python3 python3-pip -y
-    echo "Python3 and pip installed."
+    if is_installed "python3"; then
+        echo "Python3 is already installed."
+    else
+        echo "Installing Python3 and pip..."
+        apt install python3 python3-pip -y
+        echo "Python3 and pip installed."
+    fi
 }
 
 # Function to install Netcat
 install_netcat() {
-    echo "Installing Netcat..."
-    apt install netcat -y
-    echo "Netcat installed."
+    if is_installed "nc"; then
+        echo "Netcat is already installed."
+    else
+        echo "Installing Netcat..."
+        apt install netcat -y
+        echo "Netcat installed."
+    fi
 }
 
 # Function to install Nikto
 install_nikto() {
-    echo "Installing Nikto..."
-    apt install nikto -y
-    echo "Nikto installed."
+    if is_installed "nikto"; then
+        echo "Nikto is already installed."
+    else
+        echo "Installing Nikto..."
+        apt install nikto -y
+        echo "Nikto installed."
+    fi
 }
 
 # Function to install Fluxion
 install_fluxion() {
-    echo "Installing Fluxion..."
-    apt install git -y
-    git clone https://github.com/FluxionNetwork/fluxion.git
-    cd fluxion || { echo "Failed to enter fluxion directory"; exit 1; }
-    chmod +x fluxion.sh
-    echo "Fluxion installed. You can run it by navigating to the fluxion directory and executing ./fluxion.sh"
-    cd ..
+    if [ -d "fluxion" ]; then
+        echo "Fluxion is already installed."
+    else
+        echo "Installing Fluxion..."
+        apt install git -y
+        git clone https://github.com/FluxionNetwork/fluxion.git
+        cd fluxion || { echo "Failed to enter fluxion directory"; exit 1; }
+        chmod +x fluxion.sh
+        echo "Fluxion installed. You can run it by navigating to the fluxion directory and executing ./fluxion.sh"
+        cd ..
+    fi
 }
 
 # Function to display the menu
@@ -105,4 +138,4 @@ install_tools() {
 check_root
 install_tools
 
-echo "Selected tools installed successfully!"
+echo "Selected tools installation process completed!"
