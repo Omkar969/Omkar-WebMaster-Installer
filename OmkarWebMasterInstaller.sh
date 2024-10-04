@@ -31,6 +31,21 @@ is_installed() {
     dpkg -l | grep -qw "$1"
 }
 
+# Function to install a package with error handling
+install_package() {
+    PACKAGE=$1
+    if is_installed "$PACKAGE"; then
+        log_message "$PACKAGE is already installed. Skipping."
+    else
+        print_message "Installing $PACKAGE..."
+        if sudo apt install "$PACKAGE" -y >> "$LOG_FILE" 2>&1; then
+            log_message "$PACKAGE installation completed."
+        else
+            log_message "Error installing $PACKAGE. Check the log for details."
+        fi
+    fi
+}
+
 # Function to prompt user for software selection
 menu_selection() {
     echo -e "\033[1;36mSelect the software components you want to install:\033[0m"
@@ -48,42 +63,7 @@ menu_selection() {
     echo "$selection"
 }
 
-# Function to install Apache2
-install_apache2() {
-    if is_installed "apache2"; then
-        log_message "Apache2 is already installed. Skipping."
-    else
-        print_message "Installing Apache2..."
-        sudo apt install apache2 -y >> "$LOG_FILE" 2>&1
-        sudo systemctl enable apache2
-        sudo systemctl start apache2
-        log_message "Apache2 installation completed."
-    fi
-}
-
-# Function to install PHP
-install_php() {
-    if is_installed "php"; then
-        log_message "PHP is already installed. Skipping."
-    else
-        print_message "Installing PHP and required extensions..."
-        sudo apt install php libapache2-mod-php php-mysql -y >> "$LOG_FILE" 2>&1
-        log_message "PHP installation completed."
-    fi
-}
-
-# Function to install Python3
-install_python3() {
-    if is_installed "python3"; then
-        log_message "Python3 is already installed. Skipping."
-    else
-        print_message "Installing Python3..."
-        sudo apt install python3 -y >> "$LOG_FILE" 2>&1
-        log_message "Python3 installation completed."
-    fi
-}
-
-# Function to install MariaDB
+# Function to install MariaDB with secure installation and create a user
 install_mariadb() {
     if is_installed "mariadb-server"; then
         log_message "MariaDB is already installed. Skipping."
@@ -94,18 +74,49 @@ install_mariadb() {
         sudo systemctl start mariadb
 
         print_message "Securing MariaDB installation (interactive)..."
-        sudo mysql_secure_installation
-        log_message "MariaDB installation completed."
+        if sudo mysql_secure_installation; then
+            log_message "MariaDB secured successfully."
+        else
+            log_message "Failed to secure MariaDB installation. Please check manually."
+        fi
+        
+        # Creating a new user and granting privileges
+        create_mariadb_user
+    fi
+}
+
+# Function to create a new MariaDB user and grant privileges
+create_mariadb_user() {
+    read -p "Enter the new MariaDB username: " db_username
+    read -sp "Enter the password for the new user: " db_password
+    echo ""
+    
+    read -p "Enter the host for the new user (e.g., localhost): " db_host
+    
+    # Create the user and grant privileges
+    print_message "Creating user '$db_username' and granting privileges..."
+
+    # Automatically login to MariaDB and run the commands
+    if sudo mysql -u root -p -e "CREATE USER '$db_username'@'$db_host' IDENTIFIED BY '$db_password'; GRANT ALL PRIVILEGES ON *.* TO '$db_username'@'$db_host' WITH GRANT OPTION; FLUSH PRIVILEGES;" >> "$LOG_FILE" 2>&1; then
+        log_message "User '$db_username' created and granted all privileges."
+    else
+        log_message "Error creating user '$db_username'. Check the log for details."
     fi
 }
 
 # Function to install DVWA
 install_dvwa() {
     print_message "Downloading and installing DVWA..."
-    wget https://raw.githubusercontent.com/IamCarron/DVWA-Script/main/Install-DVWA.sh >> "$LOG_FILE" 2>&1
-    chmod +x Install-DVWA.sh
-    sudo ./Install-DVWA.sh >> "$LOG_FILE" 2>&1
-    log_message "DVWA installation completed."
+    if wget https://raw.githubusercontent.com/IamCarron/DVWA-Script/main/Install-DVWA.sh -O Install-DVWA.sh >> "$LOG_FILE" 2>&1; then
+        chmod +x Install-DVWA.sh
+        if sudo ./Install-DVWA.sh >> "$LOG_FILE" 2>&1; then
+            log_message "DVWA installation completed."
+        else
+            log_message "Error installing DVWA. Check the log for details."
+        fi
+    else
+        log_message "Failed to download DVWA installation script."
+    fi
 }
 
 # Function to install Fluxion
@@ -113,38 +124,22 @@ install_fluxion() {
     print_message "Installing Fluxion..."
     
     # Clone Fluxion repository
-    git clone https://www.github.com/FluxionNetwork/fluxion.git >> "$LOG_FILE" 2>&1
-    cd fluxion || exit
+    if git clone https://www.github.com/FluxionNetwork/fluxion.git >> "$LOG_FILE" 2>&1; then
+        cd fluxion || { log_message "Failed to enter Fluxion directory."; return; }
 
-    # Install dependencies for Fluxion
-    sudo apt install aircrack-ng isc-dhcp-server hostapd lighttpd bettercap mdk3 nmap -y >> "$LOG_FILE" 2>&1
-    
-    # Run installer script for Fluxion
-    sudo ./fluxion.sh >> "$LOG_FILE" 2>&1
-    
-    cd ..  # Navigate back to the previous directory
-    log_message "Fluxion installation completed."
-}
-
-# Function to install Nikto
-install_nikto() {
-    if is_installed "nikto"; then
-        log_message "Nikto is already installed. Skipping."
+        # Install dependencies for Fluxion
+        sudo apt install aircrack-ng isc-dhcp-server hostapd lighttpd bettercap mdk3 nmap -y >> "$LOG_FILE" 2>&1
+        
+        # Run installer script for Fluxion
+        if sudo ./fluxion.sh >> "$LOG_FILE" 2>&1; then
+            log_message "Fluxion installation completed."
+        else
+            log_message "Error during Fluxion installation. Check the log for details."
+        fi
+        
+        cd ..  # Navigate back to the previous directory
     else
-        print_message "Installing Nikto..."
-        sudo apt install nikto -y >> "$LOG_FILE" 2>&1
-        log_message "Nikto installation completed."
-    fi
-}
-
-# Function to install Netcat
-install_netcat() {
-    if is_installed "netcat"; then
-        log_message "Netcat is already installed. Skipping."
-    else
-        print_message "Installing Netcat..."
-        sudo apt install netcat -y >> "$LOG_FILE" 2>&1
-        log_message "Netcat installation completed."
+        log_message "Failed to clone Fluxion repository."
     fi
 }
 
@@ -152,9 +147,7 @@ install_netcat() {
 confirm_choices() {
     log_message "You have selected the following components to install: $1"
     read -p "Are you sure you want to proceed? (yes/no): " confirm
-    if [[ "$confirm" == "yes" || "$confirm" == "y" ]]; then
-        return 0
-    else
+    if [[ "$confirm" != "yes" && "$confirm" != "y" ]]; then
         log_message "Installation aborted by user."
         exit 1
     fi
@@ -167,7 +160,10 @@ print_message "Starting installation script..."
 
 # Update package list
 print_message "Updating package list..."
-sudo apt update -y >> "$LOG_FILE" 2>&1
+if ! sudo apt update -y >> "$LOG_FILE" 2>&1; then
+    log_message "Failed to update package list. Exiting."
+    exit 1
+fi
 
 # Get the user’s selection from the menu
 choices=$(menu_selection)
@@ -176,14 +172,22 @@ confirm_choices "$choices"
 # Parse user choices and install selected components
 for choice in $choices; do
     case "$choice" in
-        1) install_apache2 ;;
-        2) install_php ;;
-        3) install_python3 ;;
+        1) install_package "apache2" ;;
+        2) install_package "php libapache2-mod-php php-mysql" ;;
+        3) install_package "python3" ;;
         4) install_mariadb ;;
         5) install_fluxion ;;
-        6) install_nikto ;;
-        7) install_netcat ;;
-        8) install_apache2; install_php; install_python3; install_mariadb; install_fluxion; install_nikto; install_netcat ;;
+        6) install_package "nikto" ;;
+        7) install_package "netcat" ;;
+        8) 
+            install_package "apache2"
+            install_package "php libapache2-mod-php php-mysql"
+            install_package "python3"
+            install_mariadb
+            install_fluxion
+            install_package "nikto"
+            install_package "netcat"
+            ;;
         9) log_message "No components selected. Exiting." ;;
         *) log_message "Invalid selection: $choice. Skipping." ;;
     esac
