@@ -99,7 +99,7 @@ print_message "Starting installation script..."
 choices=""
 while true; do
     choices=$(menu_selection)
-    
+
     # Validate user input
     if validate_selection "$choices"; then
         break
@@ -107,6 +107,36 @@ while true; do
 done
 
 confirm_choices "$choices"
+
+# Function to install MariaDB
+install_mariadb() {
+    if is_installed "mariadb-server"; then
+        log_message "MariaDB is already installed. Skipping."
+    else
+        print_message "Installing MariaDB..."
+        if sudo apt install mariadb-server -y >> "$LOG_FILE" 2>&1; then
+            log_message "MariaDB installation completed."
+        else
+            log_message "Error installing MariaDB. Check the log for details."
+        fi
+    fi
+}
+
+# Function to install DVWA
+install_dvwa() {
+    # This function should contain the logic to install DVWA
+    # Placeholder for installation steps
+    print_message "Installing DVWA..."
+    log_message "DVWA installation steps would go here."
+}
+
+# Function to install Fluxion
+install_fluxion() {
+    # This function should contain the logic to install Fluxion
+    # Placeholder for installation steps
+    print_message "Installing Fluxion..."
+    log_message "Fluxion installation steps would go here."
+}
 
 # Parse user choices and install selected components
 for choice in $choices; do
