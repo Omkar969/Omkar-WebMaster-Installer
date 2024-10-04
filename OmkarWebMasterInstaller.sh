@@ -55,7 +55,21 @@ install_fluxion() {
 install_git() { install_tool "git" "apt install git -y"; }
 install_curl() { install_tool "curl" "apt install curl -y"; }
 install_nmap() { install_tool "nmap" "apt install nmap -y"; }
-install_ssh() { install_tool "ssh Server" "apt install ssh -y && systemctl enable ssh && systemctl start ssh"; }
+install_openssh() {
+    if is_installed "sshd"; then
+        echo -e "\033[1;33mOpenSSH Server is already installed.\033[0m"
+    else
+        echo -e "\033[1;32mInstalling OpenSSH Server...\033[0m"
+        apt install openssh-server -y
+        if [ $? -eq 0 ]; then
+            systemctl enable ssh
+            systemctl start ssh
+            echo -e "\033[1;32mOpenSSH Server installed and started successfully!\033[0m"
+        else
+            echo -e "\033[1;31mFailed to install OpenSSH Server. Please check the package manager for details.\033[0m"
+        fi
+    fi
+}
 install_wireshark() { install_tool "wireshark" "apt install wireshark -y"; }
 install_docker() { 
     if is_installed "docker"; then 
@@ -120,10 +134,10 @@ display_menu() {
     echo -e "\033[1;35m8) Git\033[0m"
     echo -e "\033[1;32m9) Curl\033[0m"
     echo -e "\033[1;36m10) Nmap\033[0m"
-    echo -e "\033[1;34m11) SSH Server\033[0m"
+    echo -e "\033[1;34m11) OpenSSH Server\033[0m"
     echo -e "\033[1;31m12) Wireshark\033[0m"
     echo -e "\033[1;33m13) Docker\033[0m"
-    echo -e "\033[1;35m14) Metasploit Framework\033[0m"
+    echo -e "\033[1;35m14) Metasploit\033[0m"
     echo -e "\033[1;32m15) Burp Suite\033[0m"
     echo -e "\033[1;36m16) Snort\033[0m"
     echo -e "\033[1;34m17) Aircrack-ng\033[0m"
@@ -131,8 +145,8 @@ display_menu() {
     echo -e "\033[1;33m19) OpenVAS\033[0m"
     echo -e "\033[1;35m20) SQLMap\033[0m"
     echo -e "\033[1;32m21) Ettercap\033[0m"
-    echo -e "\033[1;36m22) Uninstall a Tool\033[0m"
-    echo -e "\033[1;31m23) Exit\033[0m"
+    echo -e "\033[1;34m22) Uninstall a Tool\033[0m"
+    echo -e "\033[1;36m23) Exit\033[0m"
     echo -e "\033[1;36m============================\033[0m"
 }
 
@@ -168,7 +182,7 @@ while true; do
             8) install_git ;;
             9) install_curl ;;
             10) install_nmap ;;
-            11) install_SSH_Server ;;
+            11) install_openssh ;;
             12) install_wireshark ;;
             13) install_docker ;;
             14) install_metasploit ;;
