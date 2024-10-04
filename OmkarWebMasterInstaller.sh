@@ -134,20 +134,25 @@ display_menu() {
 
 # Function to read user choice and install selected tools
 install_tools() {
-    display_menu
-    read -p "Enter your choice (e.g., 1 3 5): " -a choices
+    while true; do
+        display_menu
+        read -p "Enter your choice (e.g., 1 3 5): " -a choices
 
-    for choice in "${choices[@]}"; do
-        case $choice in
-            1) install_apache2 ;;
-            2) install_mariadb ;;
-            3) install_php ;;
-            4) install_python3 ;;
-            5) install_netcat ;;
-            6) install_nikto ;;
-            7) install_fluxion ;;
-            *) echo "Invalid choice: $choice. Skipping." ;;
-        esac
+        for choice in "${choices[@]}"; do
+            case $choice in
+                1) install_apache2 ;;
+                2) install_mariadb ;;
+                3) install_php ;;
+                4) install_python3 ;;
+                5) install_netcat ;;
+                6) install_nikto ;;
+                7) install_fluxion ;;
+                8) echo "Exiting..."; exit 0 ;;
+                *) echo "Invalid choice: $choice. Skipping." ;;
+            esac
+        done
+
+        echo "All selected tools processed."
     done
 }
 
