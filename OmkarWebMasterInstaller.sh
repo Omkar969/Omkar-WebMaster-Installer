@@ -17,6 +17,15 @@ print_message() {
     log_message "============================================================\n"
 }
 
+# Function to print the header
+print_header() {
+    echo -e "\n"
+    echo -e "\033[1;34m============================================================\033[0m"
+    echo -e "\033[1;32m             Welcome to the Web Stack Installer             \033[0m"
+    echo -e "\033[1;33m                     Created by Omkar Gore                    \033[0m"
+    echo -e "\033[1;34m============================================================\033[0m\n"
+}
+
 # Function to check if a package is installed
 is_installed() {
     dpkg -l | grep -qw "$1"
@@ -24,7 +33,7 @@ is_installed() {
 
 # Function to prompt user for software selection
 menu_selection() {
-    echo "Select the software components you want to install:"
+    echo -e "\033[1;36mSelect the software components you want to install:\033[0m"
     echo "1) Apache2"
     echo "2) PHP"
     echo "3) Python3"
@@ -152,6 +161,8 @@ confirm_choices() {
 }
 
 # Main script logic
+print_header
+
 print_message "Starting installation script..."
 
 # Update package list
